@@ -74,7 +74,7 @@ def top_menu():
     )
 
     pages = {
-        "Home": st.Page("streamlit_app.py"),
+        "Home": st.Page("main.py"),
         "Race compare": st.Page("pages/race_comp.py", icon="🏠"),
         "Athlete compare": st.Page("pages/athlete_comp.py", icon="🏋️"),
         "Records": st.Page("pages/records.py", icon="🏆"),
