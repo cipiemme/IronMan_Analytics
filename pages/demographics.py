@@ -9,5 +9,3 @@ dem = load_merge()
 
 bottom_head()
 
-
-
