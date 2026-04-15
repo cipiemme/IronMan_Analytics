@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from custom import top_menu, bottom_head
+from custom import top_menu, bottom_head, load_merge
 
 top_menu()
 

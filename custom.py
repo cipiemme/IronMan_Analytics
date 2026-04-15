@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+import geopandas as gpd
 
 def top_menu():
     st.set_page_config(
@@ -90,64 +91,62 @@ def bottom_head():
         st.code("placeholder.two@example.com")
 
 def load_merge():
+
+    url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
+    world = gpd.read_file(url)
+    world = world[["NAME", "geometry"]]
+    
+    # remove antartica
+    world = world[world["NAME"] != "Antarctica"]
+    
     # load all files
-    F03 = pd.read_csv("/Data/WorldChamp/F/IM2003_F.csv")
-    M03 = pd.read_csv("/Data/WorldChamp/M/IM2003_M.csv")
-    F04 = pd.read_csv("/Data/WorldChamp/F/IM2004_F.csv")
-    M04 = pd.read_csv("/Data/WorldChamp/M/IM2004_M.csv")
-    F05 = pd.read_csv("/Data/WorldChamp/F/IM2005_F.csv")
-    M05 = pd.read_csv("/Data/WorldChamp/M/IM2005_M.csv")
-    F06 = pd.read_csv("/Data/WorldChamp/F/IM2006_F.csv")
-    M06 = pd.read_csv("/Data/WorldChamp/M/IM2006_M.csv")
-    F07 = pd.read_csv("/Data/WorldChamp/F/IM2007_F.csv")
-    M07 = pd.read_csv("/Data/WorldChamp/M/IM2007_M.csv")
-    F08 = pd.read_csv("/Data/WorldChamp/F/IM2008_F.csv")
-    M08 = pd.read_csv("/Data/WorldChamp/M/IM2008_M.csv")
-    F09 = pd.read_csv("/Data/WorldChamp/F/IM2009_F.csv")
-    M09 = pd.read_csv("/Data/WorldChamp/M/IM2009_M.csv")
-    F10 = pd.read_csv("/Data/WorldChamp/F/IM2010_F.csv")
-    M10 = pd.read_csv("/Data/WorldChamp/M/IM2010_M.csv")
-    F11 = pd.read_csv("/Data/WorldChamp/F/IM2011_F.csv")
-    M11 = pd.read_csv("/Data/WorldChamp/M/IM2011_M.csv")
-    F12 = pd.read_csv("/Data/WorldChamp/F/IM2012_F.csv")
-    M12 = pd.read_csv("/Data/WorldChamp/M/IM2012_M.csv")
-    F13 = pd.read_csv("/Data/WorldChamp/F/IM2013_F.csv")
-    M13 = pd.read_csv("/Data/WorldChamp/M/IM2013_M.csv")
-    F14 = pd.read_csv("/Data/WorldChamp/F/IM2014_F.csv")
-    M14 = pd.read_csv("/Data/WorldChamp/M/IM2014_M.csv")
-    F15 = pd.read_csv("/Data/WorldChamp/F/IM2015_F.csv")
-    M15 = pd.read_csv("/Data/WorldChamp/M/IM2015_M.csv")
-    F16 = pd.read_csv("/Data/WorldChamp/F/IM2016_F.csv")
-    M16 = pd.read_csv("/Data/WorldChamp/M/IM2016_M.csv")
-    F17 = pd.read_csv("/Data/WorldChamp/F/IM2017_F.csv")
-    M17 = pd.read_csv("/Data/WorldChamp/M/IM2017_M.csv")
-    F18 = pd.read_csv("/Data/WorldChamp/F/IM2018_F.csv")
-    M18 = pd.read_csv("/Data/WorldChamp/M/IM2018_M.csv")
-    F19 = pd.read_csv("/Data/WorldChamp/F/IM2019_F.csv")
-    M19 = pd.read_csv("/Data/WorldChamp/M/IM2019_M.csv")
-    F22 = pd.read_csv("/Data/WorldChamp/F/IM2022_F.csv")
-    M22 = pd.read_csv("/Data/WorldChamp/M/IM2022_M.csv")
-    F23 = pd.read_csv("/Data/WorldChamp/F/IM2023_F.csv")
-    M23 = pd.read_csv("/Data/WorldChamp/M/IM2023_M.csv")
-    F24 = pd.read_csv("/Data/WorldChamp/F/IM2024_F.csv")
-    M24 = pd.read_csv("/Data/WorldChamp/M/IM2024_M.csv")
-    F25 = pd.read_csv("/Data/WorldChamp/F/IM2025_F.csv")
-    M25 = pd.read_csv("/Data/WorldChamp/M/IM2025_M.csv")
-
-    # Dynamically collect all Fxx and Mxx dataframes
-    all_dataframes_to_combine = []
-
-    # Get all variables in the global scope
-    current_globals = globals()
-    for name in list(current_globals.keys()): # Iterate over a copy of keys
-        # Check if the variable name matches the pattern Fxx or Mxx and is a DataFrame
-        if (name.startswith('F') or name.startswith('M')) and len(name) == 3 and name[1:].isdigit():
-            df = current_globals[name]
-            if isinstance(df, pd.DataFrame):
-                all_dataframes_to_combine.append(df)
+    F03 = pd.read_csv("Data/WorldChamp/F/IM2003_F.csv")
+    M03 = pd.read_csv("Data/WorldChamp/M/IM2003_M.csv")
+    F04 = pd.read_csv("Data/WorldChamp/F/IM2004_F.csv")
+    M04 = pd.read_csv("Data/WorldChamp/M/IM2004_M.csv")
+    F05 = pd.read_csv("Data/WorldChamp/F/IM2005_F.csv")
+    M05 = pd.read_csv("Data/WorldChamp/M/IM2005_M.csv")
+    F06 = pd.read_csv("Data/WorldChamp/F/IM2006_F.csv")
+    M06 = pd.read_csv("Data/WorldChamp/M/IM2006_M.csv")
+    F07 = pd.read_csv("Data/WorldChamp/F/IM2007_F.csv")
+    M07 = pd.read_csv("Data/WorldChamp/M/IM2007_M.csv")
+    F08 = pd.read_csv("Data/WorldChamp/F/IM2008_F.csv")
+    M08 = pd.read_csv("Data/WorldChamp/M/IM2008_M.csv")
+    F09 = pd.read_csv("Data/WorldChamp/F/IM2009_F.csv")
+    M09 = pd.read_csv("Data/WorldChamp/M/IM2009_M.csv")
+    F10 = pd.read_csv("Data/WorldChamp/F/IM2010_F.csv")
+    M10 = pd.read_csv("Data/WorldChamp/M/IM2010_M.csv")
+    F11 = pd.read_csv("Data/WorldChamp/F/IM2011_F.csv")
+    M11 = pd.read_csv("Data/WorldChamp/M/IM2011_M.csv")
+    F12 = pd.read_csv("Data/WorldChamp/F/IM2012_F.csv")
+    M12 = pd.read_csv("Data/WorldChamp/M/IM2012_M.csv")
+    F13 = pd.read_csv("Data/WorldChamp/F/IM2013_F.csv")
+    M13 = pd.read_csv("Data/WorldChamp/M/IM2013_M.csv")
+    F14 = pd.read_csv("Data/WorldChamp/F/IM2014_F.csv")
+    M14 = pd.read_csv("Data/WorldChamp/M/IM2014_M.csv")
+    F15 = pd.read_csv("Data/WorldChamp/F/IM2015_F.csv")
+    M15 = pd.read_csv("Data/WorldChamp/M/IM2015_M.csv")
+    F16 = pd.read_csv("Data/WorldChamp/F/IM2016_F.csv")
+    M16 = pd.read_csv("Data/WorldChamp/M/IM2016_M.csv")
+    F17 = pd.read_csv("Data/WorldChamp/F/IM2017_F.csv")
+    M17 = pd.read_csv("Data/WorldChamp/M/IM2017_M.csv")
+    F18 = pd.read_csv("Data/WorldChamp/F/IM2018_F.csv")
+    M18 = pd.read_csv("Data/WorldChamp/M/IM2018_M.csv")
+    F19 = pd.read_csv("Data/WorldChamp/F/IM2019_F.csv")
+    M19 = pd.read_csv("Data/WorldChamp/M/IM2019_M.csv")
+    F22 = pd.read_csv("Data/WorldChamp/F/IM2022_F.csv")
+    M22 = pd.read_csv("Data/WorldChamp/M/IM2022_M.csv")
+    F23 = pd.read_csv("Data/WorldChamp/F/IM2023_F.csv")
+    M23 = pd.read_csv("Data/WorldChamp/M/IM2023_M.csv")
+    F24 = pd.read_csv("Data/WorldChamp/F/IM2024_F.csv")
+    M24 = pd.read_csv("Data/WorldChamp/M/IM2024_M.csv")
+    F25 = pd.read_csv("Data/WorldChamp/F/IM2025_F.csv")
+    M25 = pd.read_csv("Data/WorldChamp/M/IM2025_M.csv")
 
     # Concatenate all collected dataframes into one
-    combined_df = pd.concat(all_dataframes_to_combine, ignore_index=True)
+    combined_df = pd.concat([F03,M03,F04,M04,F05,M05,F06,M06,F07,M07,F08,M08,F09,M09,
+                            F10,M10,F11,M11,F12,M12,F13,M13,F14,M14,F15,M15,F16,M16,
+                            F17,M17,F18,M18,F19,M19,F22,M22,F23,M23,F24,M24,F25,M25])
 
     # Replace important names to be consistent with Geopandas database
     combined_df['Country'] = combined_df['Country'].replace('United States', 'United States of America')
@@ -157,5 +156,11 @@ def load_merge():
     combined_df['Country'] = combined_df['Country'].replace('DEUTSHLAND', 'Germany')
     combined_df['Country'] = combined_df['Country'].replace('Russian Federation', 'Russia')
     combined_df['Country'] = combined_df['Country'].replace('Czech Republic', 'Czechia')
+
+    #replace non matching with unknown
+    countries_in_combined = combined_df['Country'].unique()
+    countries_in_world = world['NAME'].unique()
+    missing_countries = [country for country in countries_in_combined if country not in countries_in_world]
+    combined_df['Country'] = combined_df['Country'].replace(missing_countries, 'Unknown')
 
     return combined_df
