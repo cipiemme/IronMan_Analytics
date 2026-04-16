@@ -12,7 +12,8 @@ def top_menu():
         "Home": st.Page("main.py"),
         "Race compare": st.Page("pages/race_comp.py", icon="🏠"),
         "Athlete compare": st.Page("pages/athlete_comp.py", icon="🏋️"),
-        "Records": st.Page("pages/records.py", icon="🏆"),
+        "Strategy analyzer": st.Page("pages/strategy_analyzer.py", icon="🗺️"),
+        "Strategy builder": st.Page("pages/strategy_builder.py", icon="🔮"),
         "Info": st.Page("pages/info.py", icon="ℹ️")
         }
     # Render top navigation using native columns
