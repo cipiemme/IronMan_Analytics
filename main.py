@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 import custom as c
 
 c.top_menu()

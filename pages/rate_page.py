@@ -1,7 +1,7 @@
 import streamlit as st
-import custom as c
+from custom import top_menu, bottom_head
 
-c.top_menu()
+top_menu()
 
 
 # System usability scale - SUS questionaire function
@@ -68,4 +68,4 @@ match quest_out:
         sub = False
 
 
-c.bottom_head()
+bottom_head()

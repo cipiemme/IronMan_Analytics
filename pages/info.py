@@ -1,7 +1,7 @@
 import streamlit as st
-import custom as c
+from custom import top_menu, bottom_head
 
-c.top_menu()
+top_menu()
 
 # ── Header Section ───────────────────────────────────────────────────
 
@@ -30,4 +30,4 @@ with st.expander("Color guide"):
                 - **:color[Yellow]{foreground="#E8E812"}**, used to present the data concerning the running segment.
     """, unsafe_allow_html=True)
 
-c.bottom_head()
+bottom_head()

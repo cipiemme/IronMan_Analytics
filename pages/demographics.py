@@ -1,13 +1,14 @@
 import streamlit as st
+from custom import top_menu, bottom_head, load_merge
+
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import matplotlib.pyplot as plt
-import custom as c
 
-c.top_menu()
+top_menu()
 
-dem = c.load_merge()
+dem = load_merge()
 
 # how many from each category are present in dataset
 divisions = dem['Division'].unique()
@@ -27,5 +28,5 @@ st.plotly_chart(dem_cat_hist_fig)
 st.write(cat_counts_df)
 
 
-c.bottom_head()
+bottom_head()
 

@@ -1,14 +1,14 @@
-import os
-import math
 import streamlit as st
+from custom import top_menu, bottom_head
+
+import os
 import pandas as pd
 import numpy as np
-import custom as c
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-c.top_menu()
+top_menu()
 
 
 # Folder that contains the CSV files. Change if needed.
@@ -341,7 +341,6 @@ else:
 
 
 
-
-c.bottom_head()
+bottom_head()
 
 
