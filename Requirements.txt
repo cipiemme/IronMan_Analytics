@@ -4,5 +4,7 @@ pandas
 bokeh
 matplotlib
 plotly
+plotly.express
+plotly.graph_objects
 numpy
 geopandas
