@@ -1,7 +1,7 @@
 import streamlit as st
-import custom as c
+from custom import top_menu, bottom_head
 
-c.top_menu()
+top_menu()
 
 text, map = st.columns([.4, .6])
 
@@ -13,4 +13,4 @@ with text:
 with map:
     st.image("Images/world_map_colored_150.png", caption="Participants world heat map, for more info visit the [Demographics](demographics) page")
 
-c.bottom_head()
+bottom_head()
