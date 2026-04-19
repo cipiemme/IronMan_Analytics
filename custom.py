@@ -18,12 +18,14 @@ def top_menu():
         }
     # Render top navigation using native columns
     with st.container(height="stretch", width="stretch", border=False):
-        headerNavLinks = st.columns([.55, 1.3, 1.3, 1.3, .55])
+        headerNavLinks = st.columns([.5, .95, .95, .95, .95, .3])
         with headerNavLinks[0]: st.page_link(pages["Home"], label="IM Analytics", use_container_width=True)
         with headerNavLinks[1]: st.page_link(pages["Race compare"], label="Race compare", use_container_width=True)
         with headerNavLinks[2]: st.page_link(pages["Athlete compare"], label="Athletes", use_container_width=True)
-        with headerNavLinks[3]: st.page_link(pages["Records"], label="Records", use_container_width=True)
-        with headerNavLinks[4]: st.page_link(pages["Info"], label="Info", use_container_width=True)
+        with headerNavLinks[3]: st.page_link(pages["Strategy analyzer"], label="Strategy analyzer", use_container_width=True)
+        with headerNavLinks[4]: st.page_link(pages["Strategy builder"], label="Strategy builder", use_container_width=True)
+        with headerNavLinks[5]: st.page_link(pages["Info"], label="Info", use_container_width=True)
+
 # define colors and dimensions of top line
     st.markdown("""
         <style>
@@ -47,14 +49,14 @@ def top_menu():
             height: 8px;
             background: linear-gradient(
                 90deg,
-                #343434 0%,
-                #343434 15%,
-                #1976d2 15%,
-                #1976d2 35%,
-                #d32f2f 40%,
-                #d32f2f 57.5%,
-                #d4af37 62.5%,
-                #d4af37 80%,
+                #CE0B2D 0%,
+                #CE0B2D 15%,
+                #18A3DD 15%,
+                #18A3DD 35%,
+                #05A435 40%,
+                #05A435 57.5%,
+                #E8E812 62.5%,
+                #E8E812 80%,
                 #e0e0e0 85%,
                 #e0e0e0 100%
             );

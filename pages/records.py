@@ -1,9 +1,9 @@
 import streamlit as st
-from custom import top_menu, bottom_head
+import custom as c
 
-top_menu()
+c.top_menu()
 
 st.header("Records page")
 st.write("In this page there will be displayed the records for each category and split")
 
-bottom_head()
+c.bottom_head()

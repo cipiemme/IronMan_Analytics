@@ -3,12 +3,12 @@ import math
 import streamlit as st
 import pandas as pd
 import numpy as np
-from custom import top_menu, bottom_head
+import custom as c
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-top_menu()
+c.top_menu()
 
 
 # Folder that contains the CSV files. Change if needed.
@@ -342,6 +342,6 @@ else:
 
 
 
-bottom_head()
+c.bottom_head()
 
 

@@ -3,12 +3,11 @@ import math
 import streamlit as st
 import pandas as pd
 import numpy as np
-from custom import top_menu, bottom_head
-import plotly.express as px
+import custom as c
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
-top_menu()
+c.top_menu()
 
 
 # Folder that contains the CSV files. Change if needed.
@@ -16,14 +15,14 @@ DATA_DIR = "Data/WorldChamp/M"
 
 YEARS = list(range(2003, 2026))          # 2003 – 2025
 DISCIPLINE_COLORS = {
-    "Swim":  "#38bdf8",   # sky blue
+    "Swim":  "#18A3DD",   # swim blue
     "T1":    "#a78bfa",   # violet
-    "Bike":  "#34d399",   # emerald
+    "Bike":  "#05A435",   # bike green
     "T2":    "#fb923c",   # orange
-    "Run":   "#f87171",   # red
+    "Run":   "#E8E812",   # run yellow
 }
-ATHLETE_PALETTE = ["#10b981", "#3b82f6", "#f97316", "#a855f7"]
 
+ATHLETE_PALETTE = ["#10b981", "#3b82f6", "#f97316", "#a855f7"]
 
 ##############
     #FUNCTIONS
@@ -368,5 +367,5 @@ else:
         hide_index=True,
     )
 
-bottom_head()
+c.bottom_head()
 

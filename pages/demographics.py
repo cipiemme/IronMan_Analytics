@@ -3,11 +3,11 @@ import pandas as pd
 import numpy as np
 import plotly.express as px
 import matplotlib.pyplot as plt
-from custom import top_menu, bottom_head, load_merge
+import custom as c
 
-top_menu()
+c.top_menu()
 
-dem = load_merge()
+dem = c.load_merge()
 
 # how many from each category are present in dataset
 divisions = dem['Division'].unique()
@@ -27,5 +27,5 @@ st.plotly_chart(dem_cat_hist_fig)
 st.write(cat_counts_df)
 
 
-bottom_head()
+c.bottom_head()
 
