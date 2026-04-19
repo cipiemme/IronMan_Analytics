@@ -5,7 +5,6 @@ import os
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 
 top_menu()
 
@@ -92,6 +91,7 @@ def percentile_rank(value, series) -> float:
 # ─── Data Loading ─────────────────────────────────────────────────────────────
 
 @st.cache_data(show_spinner="Loading race data …")
+
 def load_data() -> pd.DataFrame:
     frames = []
     for year in YEARS:
