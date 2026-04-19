@@ -1,6 +1,5 @@
 streamlit
 pandas
-geopandas
 bokeh
 matplotlib
 plotly
