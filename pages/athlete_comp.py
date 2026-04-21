@@ -1,5 +1,5 @@
 import streamlit as st
-from custom import top_menu, bottom_head, parse_time, hms, hm, speed_kmh 
+from custom import top_menu, bottom_head, parse_time, hms, hm, speed_kmh, DISCIPLINE_COLORS, ATHLETE_PALETTE
 
 import os
 import pandas as pd
@@ -7,18 +7,6 @@ import numpy as np
 import plotly.graph_objects as go
 
 top_menu()
-
-# colors
-
-ATHLETE_PALETTE = ["#10b981", "#3b82f6", "#f97316", "#a855f7"]
-DISCIPLINE_COLORS = {
-    "Swim":  "#18A3DD",   # swim blue
-    "T1":    "#a78bfa",   # violet
-    "Bike":  "#05A435",   # bike green
-    "T2":    "#fb923c",   # orange
-    "Run":   "#E8E812",   # run yellow
-}
-
 
 # Folder that contains the CSV files. Change if needed.
 DATA_DIR = "Data/WorldChamp/M"
@@ -146,14 +134,6 @@ def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
 df = apply_filters(df_all)
 
 ############
-
-
-
-
-
-
-
-
 
 
 st.header("Athlete Performance Comparator")
@@ -306,6 +286,8 @@ else:
         width="stretch",
         hide_index=True,
     )
+
+
 
 bottom_head()
 

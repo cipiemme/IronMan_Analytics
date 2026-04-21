@@ -3,6 +3,20 @@ import pandas as pd
 import geopandas as gpd
 import numpy as np
 
+# colors
+
+ATHLETE_PALETTE = ["#10b981", "#3b82f6", "#f97316", "#a855f7"]
+
+DISCIPLINE_COLORS = {
+    "Swim":  "#18A3DD",   # swim blue
+    "T1":    "#a78bfa",   # violet
+    "Bike":  "#05A435",   # bike green
+    "T2":    "#fb923c",   # orange
+    "Run":   "#E8E812",   # run yellow
+}
+
+
+
 # interface functions
 
 def top_menu():
