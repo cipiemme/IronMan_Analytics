@@ -1,5 +1,5 @@
 import streamlit as st
-from custom import top_menu, bottom_head
+from custom import top_menu, bottom_head, parse_time, hms, hm, speed_kmh 
 
 import os
 import pandas as pd
@@ -8,11 +8,9 @@ import plotly.graph_objects as go
 
 top_menu()
 
+# colors
 
-# Folder that contains the CSV files. Change if needed.
-DATA_DIR = "Data/WorldChamp/M"
-
-YEARS = list(range(2003, 2026))          # 2003 – 2025
+ATHLETE_PALETTE = ["#10b981", "#3b82f6", "#f97316", "#a855f7"]
 DISCIPLINE_COLORS = {
     "Swim":  "#18A3DD",   # swim blue
     "T1":    "#a78bfa",   # violet
@@ -21,72 +19,14 @@ DISCIPLINE_COLORS = {
     "Run":   "#E8E812",   # run yellow
 }
 
-ATHLETE_PALETTE = ["#10b981", "#3b82f6", "#f97316", "#a855f7"]
+
+# Folder that contains the CSV files. Change if needed.
+DATA_DIR = "Data/WorldChamp/M"
+
+YEARS = list(range(2003, 2026))          # 2003 – 2025
 
 ##############
     #FUNCTIONS
-
-def parse_time(t) -> float:
-    """HH:MM:SS → seconds. Returns NaN for zeros / invalid / DNF."""
-    s = str(t).strip() if not pd.isna(t) else ""
-    if s in ("", "00:0:0", "0:0:0", "nan"):
-        return np.nan
-    try:
-        parts = s.split(":")
-        if len(parts) == 3:
-            total = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
-        elif len(parts) == 2:
-            total = int(parts[0]) * 60 + int(parts[1])
-        else:
-            return np.nan
-        return float(total) if total > 0 else np.nan
-    except Exception:
-        return np.nan
-
-
-def hms(seconds) -> str:
-    """seconds → H:MM:SS"""
-    if pd.isna(seconds):
-        return "N/A"
-    seconds = int(round(seconds))
-    h = seconds // 3600
-    m = (seconds % 3600) // 60
-    s = seconds % 60
-    return f"{h}:{m:02d}:{s:02d}"
-
-
-def hm(seconds) -> str:
-    """seconds → H:MM"""
-    if pd.isna(seconds):
-        return "N/A"
-    seconds = int(round(seconds))
-    h = seconds // 3600
-    m = (seconds % 3600) // 60
-    return f"{h}:{m:02d}"
-
-
-def pace_per_km(seconds, km) -> str:
-    """seconds for a leg → MM:SS/km pace string"""
-    if pd.isna(seconds) or km == 0:
-        return "N/A"
-    pace = seconds / km
-    m = int(pace // 60)
-    s = int(round(pace % 60))
-    return f"{m}:{s:02d}/km"
-
-
-def speed_kmh(seconds, km) -> str:
-    if pd.isna(seconds) or seconds == 0:
-        return "N/A"
-    return f"{(km / seconds * 3600):.1f} km/h"
-
-
-def percentile_rank(value, series) -> float:
-    """Percentile of 'value' within 'series' (lower time → higher percentile)."""
-    valid = series.dropna()
-    if len(valid) == 0:
-        return 50.0
-    return round(float((valid > value).sum() / len(valid) * 100), 1)
 
 # ─── Data Loading ─────────────────────────────────────────────────────────────
 

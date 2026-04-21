@@ -1,13 +1,18 @@
 import streamlit as st
 import pandas as pd
 import geopandas as gpd
+import numpy as np
+
+# interface functions
 
 def top_menu():
+
     st.set_page_config(
         page_title="IronMan Analytics",
         layout="wide",
         initial_sidebar_state="collapsed"
         )
+
     pages = {
         "Home": st.Page("main.py"),
         "Race compare": st.Page("pages/race_comp.py", icon="🏠"),
@@ -16,6 +21,7 @@ def top_menu():
         "Strategy builder": st.Page("pages/strategy_builder.py", icon="🔮"),
         "Info": st.Page("pages/info.py", icon="ℹ️")
         }
+
     # Render top navigation using native columns
     with st.container(height="stretch", width="stretch", border=False):
         headerNavLinks = st.columns([.5, .95, .95, .95, .95, .3])
@@ -26,7 +32,7 @@ def top_menu():
         with headerNavLinks[4]: st.page_link(pages["Strategy builder"], label="Strategy builder", use_container_width=True)
         with headerNavLinks[5]: st.page_link(pages["Info"], label="Info", use_container_width=True)
 
-# define colors and dimensions of top line
+    # define colors and dimensions of top line
     st.markdown("""
         <style>
         /* Hide the default Streamlit sidebar and header */
@@ -61,14 +67,6 @@ def top_menu():
                 #e0e0e0 100%
             );
         }
-
-        /* --- Header Nav Link Colors --- */
-        div[data-testid="stColumn"] a[data-testid="stPageLink-NavLink"] {
-            display: flex !important;
-            justify-content: center !important;
-            align-items: center !important;
-        }
-
         </style>
         <div class="color-bar"></div>
     """,
@@ -93,6 +91,8 @@ def bottom_head():
         st.markdown(" 📧 Email")
         st.code("placeholder.two@example.com")
 
+
+# working functions
 def load_merge():
 
     url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
@@ -167,3 +167,68 @@ def load_merge():
     combined_df['Country'] = combined_df['Country'].replace(missing_countries, 'Unknown')
 
     return combined_df
+
+def parse_time(t) -> float:
+    """HH:MM:SS → seconds. Returns NaN for zeros / invalid / DNF."""
+    s = str(t).strip() if not pd.isna(t) else ""
+    if s in ("", "00:0:0", "0:0:0", "nan"):
+        return np.nan
+    try:
+        parts = s.split(":")
+        if len(parts) == 3:
+            total = int(parts[0]) * 3600 + int(parts[1]) * 60 + int(parts[2])
+        elif len(parts) == 2:
+            total = int(parts[0]) * 60 + int(parts[1])
+        else:
+            return np.nan
+        return float(total) if total > 0 else np.nan
+    except Exception:
+        return np.nan
+
+def hms(seconds) -> str:
+    """seconds → H:MM:SS"""
+    if pd.isna(seconds):
+        return "N/A"
+    seconds = int(round(seconds))
+    h = seconds // 3600
+    m = (seconds % 3600) // 60
+    s = seconds % 60
+    return f"{h}:{m:02d}:{s:02d}"
+
+def hm(seconds) -> str:
+    """seconds → H:MM"""
+    if pd.isna(seconds):
+        return "N/A"
+    seconds = int(round(seconds))
+    h = seconds // 3600
+    m = (seconds % 3600) // 60
+    return f"{h}:{m:02d}"
+
+
+# pace per km
+def ppk(seconds, km) -> str:
+    """seconds for a leg → MM:SS/km pace string"""
+    if pd.isna(seconds) or km == 0:
+        return "N/A"
+    pace = seconds / km
+    m = int(pace // 60)
+    s = int(round(pace % 60))
+    return f"{m}:{s:02d}/km"
+
+def speed_kmh(seconds, km) -> str:
+    if pd.isna(seconds) or seconds == 0:
+        return "N/A"
+    return f"{(km / seconds * 3600):.1f} km/h"
+
+
+# percentile rank
+def perc_rank(value, series) -> float:
+    """Percentile of 'value' within 'series' (lower time → higher percentile)."""
+    valid = series.dropna()
+    if len(valid) == 0:
+        return 50.0
+    return round(float((valid > value).sum() / len(valid) * 100), 1)
+
+
+
+
