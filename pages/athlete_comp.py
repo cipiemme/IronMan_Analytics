@@ -1,151 +1,45 @@
 import streamlit as st
-from custom import top_menu, bottom_head, parse_time, hms, hm, speed_kmh, DISCIPLINE_COLORS, ATHLETE_PALETTE
+from custom import top_menu, bottom_head, hms, hm, load_data, gen_sel, DISCIPLINE_COLORS, ATHLETE_PALETTE, gr_gridcol, gr_fontcol
 
-import os
 import pandas as pd
 import numpy as np
 import plotly.graph_objects as go
 
 top_menu()
 
-# Folder that contains the CSV files. Change if needed.
-DATA_DIR = "Data/WorldChamp/M"
+DATA_DIR = gen_sel()
 
-YEARS = list(range(2003, 2026))          # 2003 – 2025
-
-##############
-    #FUNCTIONS
+# 2003 – 2025
+YEARS = list(range(2003, 2026))
 
 # ─── Data Loading ─────────────────────────────────────────────────────────────
 
-@st.cache_data(show_spinner="Loading race data …")
-
-def load_data() -> pd.DataFrame:
-    frames = []
-    for year in YEARS:
-        for code in ("M", "F"):
-            path = os.path.join(DATA_DIR, f"IM{year}_{code}.csv")
-            if not os.path.exists(path):
-                continue
-            try:
-                df = pd.read_csv(path, low_memory=False)
-                df["Year"] = year
-                df["FileGender"] = code
-                frames.append(df)
-            except Exception as e:
-                st.warning(f"Could not read {path}: {e}")
-
-    if not frames:
-        st.error(
-            "No CSV files found. Place IM2003_F.csv … IM2026_M.csv "
-            f"in: {DATA_DIR}"
-        )
-        st.stop()
-
-    raw = pd.concat(frames, ignore_index=True)
-
-    # ── Parse times to seconds ──────────────────────────────────────────────
-    time_map = {
-        "Overall Time":       "Overall_sec",
-        "Swim Time":          "Swim_sec",
-        "Bike Time":          "Bike_sec",
-        "Run Time":           "Run_sec",
-        "Transition 1 Time":  "T1_sec",
-        "Transition 2 Time":  "T2_sec",
-    }
-    for col, sec_col in time_map.items():
-        if col in raw.columns:
-            raw[sec_col] = raw[col].apply(parse_time)
-
-    # ── Keep finishers with valid overall time ───────────────────────────────
-    raw = raw[raw["Finish"] == "FIN"].copy()
-    raw = raw[raw["Overall_sec"].notna() & (raw["Overall_sec"] > 0)].copy()
-
-    # ── Derive gender from Division prefix (more reliable than Gender col) ───
-    def div_gender(div):
-        d = str(div).upper()
-        if d.startswith("F"):
-            return "Female"
-        if d.startswith("M"):
-            return "Male"
-        return "Unknown"
-
-    raw["Gender_clean"] = raw["Division"].apply(div_gender)
-
-    # ── Normalise age-group labels  ──────────────────────────────────────────
-    def clean_div(div):
-        d = str(div).strip()
-        if d in ("MPRO", "FPRO"):
-            return "PRO"
-        return d.replace("M", "").replace("F", "").strip() if d not in ("Male", "Female") else d
-
-    raw["AgeGroup"] = raw["Division"].apply(clean_div)
-
-    # ── Derived numeric columns ──────────────────────────────────────────────
-    raw["Total_min"] = raw["Overall_sec"] / 60
-    raw["Total_hr"]  = raw["Overall_sec"] / 3600
-
-    # ── Percentile within year × gender × age-group ─────────────────────────
-    # (computed lazily per query to avoid huge upfront cost)
-
-    raw.reset_index(drop=True, inplace=True)
-    return raw
-
-
-df_all = load_data()
-
-##########
-
-# ─── Sidebar – Global Filters ─────────────────────────────────────────────────
-
-with st.sidebar:
-    st.markdown("## ⚙️ Global Filters")
-    sel_years = st.multiselect(
-        "Year(s)",
-        options=YEARS,
-        default=YEARS,
-    )
-    sel_gender = st.selectbox(
-        "Gender",
-        ["All", "Male", "Female"],
-        index=0,
-    )
-    all_ag = sorted(df_all["AgeGroup"].dropna().unique().tolist())
-    sel_ag = st.multiselect(
-        "Age Group(s)",
-        options=all_ag,
-        default=[],
-        placeholder="All age groups",
-    )
-    st.markdown("---")
-    st.caption("Ironman World Championship • 2003 – 2025")
-
-# Apply global filters
-def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
-    out = df.copy()
-    if sel_years:
-        out = out[out["Year"].isin(sel_years)]
-    if sel_gender != "All":
-        out = out[out["Gender_clean"] == sel_gender]
-    if sel_ag:
-        out = out[out["AgeGroup"].isin(sel_ag)]
-    return out
-
-df = apply_filters(df_all)
-
-############
-
+df_all = load_data(DATA_DIR, YEARS)
 
 st.header("Athlete Performance Comparator")
 
+colL, colR = st.columns([.5, .5])
+
+with colL.expander("Year filters"):
+    sel_years = st.slider("Years", min_value= 2003, max_value= 2026, step= 1, value= (2003, 2026))
+
+with colR.expander("Age group"):
+    all_ag = sorted(df_all["AgeGroup"].dropna().unique().tolist())
+    sel_ag = st.multiselect( "Age Group(s)", options=all_ag, default=[], placeholder="All age groups")
+
+# Apply filters
+if sel_years:
+    df = df_all[df_all["Year"].isin(sel_years)]
+
+if sel_ag:
+    df = df_all[df_all["AgeGroup"].isin(sel_ag)]
+
 # Athlete search
 all_names = sorted(df["Name"].dropna().unique().tolist())
-sel_athletes = st.multiselect(
-    "Search and select up to 4 athletes",
-    options=all_names,
-    max_selections=4,
-    placeholder="Type a name …",
-)
+
+sel_athletes = st.multiselect( "Search and select up to 4 athletes", options=all_names,
+                              max_selections=4, placeholder="Type a name …")
+
 if not sel_athletes:
     st.info("Select at least one athlete from the list above to begin comparison.")
 else:
@@ -214,18 +108,20 @@ else:
         fillcolor=fill_rgba,
         opacity=0.85,
     ))
+
     fig_radar.update_layout(
         polar=dict(
-            radialaxis=dict(range=[0, 100], showticklabels=True, gridcolor="#374151"),
-            angularaxis=dict(gridcolor="#374151"),
+            radialaxis=dict(range=[0, 100], showticklabels=True, gridcolor= gr_gridcol),
+            angularaxis=dict(gridcolor= gr_gridcol),
             bgcolor="rgba(17,24,39,0.6)",
         ),
         paper_bgcolor="rgba(0,0,0,0)",
-        font_color="#9ca3af",
+        font_color= gr_fontcol,
         showlegend=True,
         height=420,
         legend=dict(orientation="h", y=-0.1),
     )
+
     # ── Split comparison bars ────────────────────────────────────────────
     bar_segs = [
         ("Swim", "Swim_sec"),
@@ -246,27 +142,33 @@ else:
             textposition="inside",
             hovertemplate=f"<b>{seg}</b><br>%{{x}}: %{{text}}<extra></extra>",
         ))
+
     fig_bar.update_layout(
-        barmode="stack",
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(17,24,39,0.6)",
-        font_color="#9ca3af",
-        margin=dict(l=10, r=10, t=10, b=10),
-        xaxis=dict(gridcolor="#374151"),
-        yaxis=dict(title="Minutes", gridcolor="#374151"),
-        legend=dict(orientation="h", y=1.05),
-        height=350,
+        barmode = "stack",
+        paper_bgcolor = "rgba(0,0,0,0)",
+        plot_bgcolor = "rgba(17,24,39,0.6)",
+        font_color = gr_fontcol,
+        margin = dict(l=10, r=10, t=10, b=10),
+        xaxis = dict(gridcolor = gr_gridcol),
+        yaxis = dict(title = "Minutes", gridcolor = gr_gridcol),
+        legend = dict(orientation = "h", y = 1.05),
+        height = 350,
     )
+
     col_r, col_b = st.columns(2)
+
     with col_r:
         st.subheader("Performance Radar")
         st.plotly_chart(fig_radar, width="stretch")
+
     with col_b:
         st.subheader("Split Breakdown")
         st.plotly_chart(fig_bar, width="stretch")
+
     # ── Detail table ────────────────────────────────────────────────────
     st.subheader("Split Details")
     detail_rows = []
+
     for _, row in athlete_rows.iterrows():
         detail_rows.append({
             "Athlete":      row["Name"],
@@ -290,4 +192,3 @@ else:
 
 
 bottom_head()
-

@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import geopandas as gpd
 import numpy as np
+import os
 
 # colors
 
@@ -15,38 +16,20 @@ DISCIPLINE_COLORS = {
     "Run":   "#E8E812",   # run yellow
 }
 
+gr_gridcol = "#374151"
 
+gr_fontcol = "#9ca3af"
 
-# interface functions
+## interface functions
 
 def top_menu():
 
-    st.set_page_config(
-        page_title="IronMan Analytics",
-        layout="wide",
-        initial_sidebar_state="collapsed"
-        )
 
-    pages = {
-        "Home": st.Page("main.py"),
-        "Race compare": st.Page("pages/race_comp.py", icon="🏠"),
-        "Athlete compare": st.Page("pages/athlete_comp.py", icon="🏋️"),
-        "Strategy analyzer": st.Page("pages/strategy_analyzer.py", icon="🗺️"),
-        "Strategy builder": st.Page("pages/strategy_builder.py", icon="🔮"),
-        "Info": st.Page("pages/info.py", icon="ℹ️")
-        }
+    st.sidebar.title("ironMan Analytics")
 
-    # Render top navigation using native columns
-    with st.container(height="stretch", width="stretch", border=False):
-        headerNavLinks = st.columns([.5, .95, .95, .95, .95, .3])
-        with headerNavLinks[0]: st.page_link(pages["Home"], label="IM Analytics", use_container_width=True)
-        with headerNavLinks[1]: st.page_link(pages["Race compare"], label="Race compare", use_container_width=True)
-        with headerNavLinks[2]: st.page_link(pages["Athlete compare"], label="Athletes", use_container_width=True)
-        with headerNavLinks[3]: st.page_link(pages["Strategy analyzer"], label="Strategy analyzer", use_container_width=True)
-        with headerNavLinks[4]: st.page_link(pages["Strategy builder"], label="Strategy builder", use_container_width=True)
-        with headerNavLinks[5]: st.page_link(pages["Info"], label="Info", use_container_width=True)
 
-    # define colors and dimensions of top line
+
+    # define colors and dimensions of background
     st.markdown("""
         <style>
         /* Hide the default Streamlit sidebar and header */
@@ -60,32 +43,50 @@ def top_menu():
             padding-bottom: 0rem !important;
         }
 
-        /* Color accent bar at the top of the page */
-        .color-bar {
+        /* Color accent background */
+        .sfondo {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 8px;
+            height: 10px;
             background: linear-gradient(
                 90deg,
-                #CE0B2D 0%,
-                #CE0B2D 15%,
-                #18A3DD 15%,
-                #18A3DD 35%,
-                #05A435 40%,
-                #05A435 57.5%,
-                #E8E812 62.5%,
-                #E8E812 80%,
-                #e0e0e0 85%,
-                #e0e0e0 100%
+                #0F0000 0%,
+                #0F0000 100%
             );
         }
         </style>
-        <div class="color-bar"></div>
+        <div class="sfondo"></div>
     """,
     unsafe_allow_html=True,
     )
+
+
+    st.set_page_config(
+        page_title="IronMan Analytics",
+        layout="wide",
+        initial_sidebar_state="collapsed"
+        )
+
+    pages = {
+        "Home": st.Page("main.py"),
+        "Race compare": st.Page("pages/race_comp.py", icon="🏠"),
+        "Athlete compare": st.Page("pages/athlete_comp.py", icon="🏋️"),
+        "Predictive model": st.Page("pages/strategy_analyzer.py", icon="🗺️"),
+        "Strategy builder": st.Page("pages/strategy_builder.py", icon="🔮"),
+        "Info": st.Page("pages/info.py", icon="ℹ️")
+        }
+
+    # Render top navigation using native columns
+    with st.container(height="stretch", width="stretch", border=False):
+        headerNavLinks = st.columns([ 1, 1, 1, 1, .5])
+        with headerNavLinks[0]: st.page_link(pages["Race compare"], label="Race Intelligence Dashboard", use_container_width=True)
+        with headerNavLinks[1]: st.page_link(pages["Athlete compare"], label="Athlete Comparator", use_container_width=True)
+        with headerNavLinks[2]: st.page_link(pages["Predictive model"], label="Predictive Time Model", use_container_width=True)
+        with headerNavLinks[3]: st.page_link(pages["Strategy builder"], label="Race Strategy Builder", use_container_width=True)
+        with headerNavLinks[4]: st.page_link(pages["Info"], label="Info", use_container_width=True)
+
 
 def bottom_head():
     st.markdown("---")
@@ -106,7 +107,12 @@ def bottom_head():
         st.code("placeholder.two@example.com")
 
 
-# working functions
+
+
+
+## working functions
+
+#load functions
 def load_merge():
 
     url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
@@ -182,6 +188,88 @@ def load_merge():
 
     return combined_df
 
+def load_data(DATA_DIR, YEARS) -> pd.DataFrame:
+    frames = []
+    for year in YEARS:
+        for code in ("M", "F"):
+            path = os.path.join(DATA_DIR, f"IM{year}_{code}.csv")
+            if not os.path.exists(path):
+                continue
+            try:
+                df = pd.read_csv(path, low_memory=False)
+                df["Year"] = year
+                df["FileGender"] = code
+                frames.append(df)
+            except Exception as e:
+                st.warning(f"Could not read {path}: {e}")
+
+    if not frames:
+        st.error(
+            "No CSV files found. Place IM2003_F.csv … IM2026_M.csv "
+            f"in: {DATA_DIR}"
+        )
+        st.stop()
+
+    raw = pd.concat(frames, ignore_index=True)
+
+    # ── Parse times to seconds ──────────────────────────────────────────────
+    time_map = {
+        "Overall Time":       "Overall_sec",
+        "Swim Time":          "Swim_sec",
+        "Bike Time":          "Bike_sec",
+        "Run Time":           "Run_sec",
+        "Transition 1 Time":  "T1_sec",
+        "Transition 2 Time":  "T2_sec",
+    }
+    for col, sec_col in time_map.items():
+        if col in raw.columns:
+            raw[sec_col] = raw[col].apply(parse_time)
+
+    # ── Keep finishers with valid overall time ───────────────────────────────
+    raw = raw[raw["Finish"] == "FIN"].copy()
+    raw = raw[raw["Overall_sec"].notna() & (raw["Overall_sec"] > 0)].copy()
+
+    # ── Derive gender from Division prefix (more reliable than Gender col) ───
+    def div_gender(div):
+        d = str(div).upper()
+        if d.startswith("F"):
+            return "Female"
+        if d.startswith("M"):
+            return "Male"
+        return "Unknown"
+
+    raw["Gender_clean"] = raw["Division"].apply(div_gender)
+
+    # ── Normalise age-group labels  ──────────────────────────────────────────
+    def clean_div(div):
+        d = str(div).strip()
+        if d in ("MPRO", "FPRO"):
+            return "PRO"
+        return d.replace("M", "").replace("F", "").strip() if d not in ("Male", "Female") else d
+
+    raw["AgeGroup"] = raw["Division"].apply(clean_div)
+
+    # ── Derived numeric columns ──────────────────────────────────────────────
+    raw["Total_min"] = raw["Overall_sec"] / 60
+    raw["Total_hr"]  = raw["Overall_sec"] / 3600
+
+    # ── Percentile within year × gender × age-group ─────────────────────────
+    # (computed lazily per query to avoid huge upfront cost)
+
+    raw.reset_index(drop=True, inplace=True)
+    return raw
+
+def gen_sel() -> str:
+    sel_gender = st.radio( "Select gender", ["Male", "Female"])
+    # Directory for the CSV files
+    if sel_gender == "Male":
+        return "Data/WorldChamp/M"
+    else:
+        return "Data/WorldChamp/F"
+
+
+
+# time parsers
 def parse_time(t) -> float:
     """HH:MM:SS → seconds. Returns NaN for zeros / invalid / DNF."""
     s = str(t).strip() if not pd.isna(t) else ""
@@ -229,6 +317,8 @@ def ppk(seconds, km) -> str:
     s = int(round(pace % 60))
     return f"{m}:{s:02d}/km"
 
+
+# speed function
 def speed_kmh(seconds, km) -> str:
     if pd.isna(seconds) or seconds == 0:
         return "N/A"

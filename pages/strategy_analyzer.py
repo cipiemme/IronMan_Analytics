@@ -1,7 +1,6 @@
 import streamlit as st
-from custom import top_menu, bottom_head, parse_time, hms, hm, speed_kmh, DISCIPLINE_COLORS, ATHLETE_PALETTE
+from custom import top_menu, bottom_head, hm, load_data, gen_sel, DISCIPLINE_COLORS, ATHLETE_PALETTE
 
-import os
 import pandas as pd
 import numpy as np
 import plotly.express as px
@@ -10,108 +9,22 @@ import plotly.graph_objects as go
 
 top_menu()
 
-
-# Folder that contains the CSV files. Change if needed.
-DATA_DIR = "Data/WorldChamp/M"
+DATA_DIR = gen_sel()
 
 YEARS = list(range(2003, 2026))          # 2003 – 2025
 
-##############
-    #FUNCTIONS
-
 # ─── Data Loading ─────────────────────────────────────────────────────────────
 
-@st.cache_data(show_spinner="Loading race data …")
-def load_data() -> pd.DataFrame:
-    frames = []
-    for year in YEARS:
-        for code in ("M", "F"):
-            path = os.path.join(DATA_DIR, f"IM{year}_{code}.csv")
-            if not os.path.exists(path):
-                continue
-            try:
-                df = pd.read_csv(path, low_memory=False)
-                df["Year"] = year
-                df["FileGender"] = code
-                frames.append(df)
-            except Exception as e:
-                st.warning(f"Could not read {path}: {e}")
-
-    if not frames:
-        st.error(
-            "No CSV files found. Place IM2003_F.csv … IM2026_M.csv "
-            f"in: {DATA_DIR}"
-        )
-        st.stop()
-
-    raw = pd.concat(frames, ignore_index=True)
-
-    # ── Parse times to seconds ──────────────────────────────────────────────
-    time_map = {
-        "Overall Time":       "Overall_sec",
-        "Swim Time":          "Swim_sec",
-        "Bike Time":          "Bike_sec",
-        "Run Time":           "Run_sec",
-        "Transition 1 Time":  "T1_sec",
-        "Transition 2 Time":  "T2_sec",
-    }
-    for col, sec_col in time_map.items():
-        if col in raw.columns:
-            raw[sec_col] = raw[col].apply(parse_time)
-
-    # ── Keep finishers with valid overall time ───────────────────────────────
-    raw = raw[raw["Finish"] == "FIN"].copy()
-    raw = raw[raw["Overall_sec"].notna() & (raw["Overall_sec"] > 0)].copy()
-
-    # ── Derive gender from Division prefix (more reliable than Gender col) ───
-    def div_gender(div):
-        d = str(div).upper()
-        if d.startswith("F"):
-            return "Female"
-        if d.startswith("M"):
-            return "Male"
-        return "Unknown"
-
-    raw["Gender_clean"] = raw["Division"].apply(div_gender)
-
-    # ── Normalise age-group labels  ──────────────────────────────────────────
-    def clean_div(div):
-        d = str(div).strip()
-        if d in ("MPRO", "FPRO"):
-            return "PRO"
-        return d.replace("M", "").replace("F", "").strip() if d not in ("Male", "Female") else d
-
-    raw["AgeGroup"] = raw["Division"].apply(clean_div)
-
-    # ── Derived numeric columns ──────────────────────────────────────────────
-    raw["Total_min"] = raw["Overall_sec"] / 60
-    raw["Total_hr"]  = raw["Overall_sec"] / 3600
-
-    # ── Percentile within year × gender × age-group ─────────────────────────
-    # (computed lazily per query to avoid huge upfront cost)
-
-    raw.reset_index(drop=True, inplace=True)
-    return raw
-
-
-df_all = load_data()
-
-##########
+df_all = load_data(DATA_DIR, YEARS)
 
 # ─── Sidebar – Global Filters ─────────────────────────────────────────────────
 
-with st.sidebar:
-    st.markdown("## ⚙️ Global Filters")
-    sel_years = st.multiselect(
-        "Year(s)",
-        options=YEARS,
-        default=YEARS,
-    )
-    sel_gender = st.selectbox(
-        "Gender",
-        ["All", "Male", "Female"],
-        index=0,
-    )
+colL, colR = st.columns([.5, .5])
+
+with colL.expander("Year filters"):
+    sel_years = st.slider("Years", min_value= 2003, max_value= 2026, step= 1, value= (2003, 2026))
+
+with colR.expander("Age group"):
     all_ag = sorted(df_all["AgeGroup"].dropna().unique().tolist())
     sel_ag = st.multiselect(
         "Age Group(s)",
@@ -119,23 +32,17 @@ with st.sidebar:
         default=[],
         placeholder="All age groups",
     )
-    st.markdown("---")
-    st.caption("Ironman World Championship • 2003 – 2025")
 
 # Apply global filters
 def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
     if sel_years:
         out = out[out["Year"].isin(sel_years)]
-    if sel_gender != "All":
-        out = out[out["Gender_clean"] == sel_gender]
     if sel_ag:
         out = out[out["AgeGroup"].isin(sel_ag)]
     return out
 
 df = apply_filters(df_all)
-
-
 
 ##########
 

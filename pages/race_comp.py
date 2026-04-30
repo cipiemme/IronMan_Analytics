@@ -1,8 +1,6 @@
 import streamlit as st
-from custom import top_menu, bottom_head, parse_time, hms, hm, speed_kmh, DISCIPLINE_COLORS, ATHLETE_PALETTE
+from custom import top_menu, bottom_head, hms, hm, load_data, gen_sel, DISCIPLINE_COLORS, ATHLETE_PALETTE, gr_gridcol, gr_fontcol
 
-import os
-import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
@@ -11,93 +9,15 @@ import plotly.graph_objects as go
 top_menu()
 
 # Folder that contains the CSV files. Change if needed.
-DATA_DIR = "Data/WorldChamp/M"
+DATA_DIR = gen_sel(),
 
 YEARS = list(range(2003, 2026))          # 2003 – 2025
 
-##############
-    #FUNCTIONS
-
 # ─── Data Loading ─────────────────────────────────────────────────────────────
 
-@st.cache_data(show_spinner="Loading race data …")
-def load_data() -> pd.DataFrame:
-    frames = []
-    for year in YEARS:
-        for code in ("M", "F"):
-            path = os.path.join(DATA_DIR, f"IM{year}_{code}.csv")
-            if not os.path.exists(path):
-                continue
-            try:
-                df = pd.read_csv(path, low_memory=False)
-                df["Year"] = year
-                df["FileGender"] = code
-                frames.append(df)
-            except Exception as e:
-                st.warning(f"Could not read {path}: {e}")
+df = load_data(DATA_DIR, YEARS)
 
-    if not frames:
-        st.error(
-            "No CSV files found. Place IM2003_F.csv … IM2026_M.csv "
-            f"in: {DATA_DIR}"
-        )
-        st.stop()
-
-    raw = pd.concat(frames, ignore_index=True)
-
-    # ── Parse times to seconds ──────────────────────────────────────────────
-    time_map = {
-        "Overall Time":       "Overall_sec",
-        "Swim Time":          "Swim_sec",
-        "Bike Time":          "Bike_sec",
-        "Run Time":           "Run_sec",
-        "Transition 1 Time":  "T1_sec",
-        "Transition 2 Time":  "T2_sec",
-    }
-    for col, sec_col in time_map.items():
-        if col in raw.columns:
-            raw[sec_col] = raw[col].apply(parse_time)
-
-    # ── Keep finishers with valid overall time ───────────────────────────────
-    raw = raw[raw["Finish"] == "FIN"].copy()
-    raw = raw[raw["Overall_sec"].notna() & (raw["Overall_sec"] > 0)].copy()
-
-    # ── Derive gender from Division prefix (more reliable than Gender col) ───
-    def div_gender(div):
-        d = str(div).upper()
-        if d.startswith("F"):
-            return "Female"
-        if d.startswith("M"):
-            return "Male"
-        return "Unknown"
-
-    raw["Gender_clean"] = raw["Division"].apply(div_gender)
-
-    # ── Normalise age-group labels  ──────────────────────────────────────────
-    def clean_div(div):
-        d = str(div).strip()
-        if d in ("MPRO", "FPRO"):
-            return "PRO"
-        return d.replace("M", "").replace("F", "").strip() if d not in ("Male", "Female") else d
-
-    raw["AgeGroup"] = raw["Division"].apply(clean_div)
-
-    # ── Derived numeric columns ──────────────────────────────────────────────
-    raw["Total_min"] = raw["Overall_sec"] / 60
-    raw["Total_hr"]  = raw["Overall_sec"] / 3600
-
-    # ── Percentile within year × gender × age-group ─────────────────────────
-    # (computed lazily per query to avoid huge upfront cost)
-
-    raw.reset_index(drop=True, inplace=True)
-    return raw
-
-
-df_all = load_data()
-df = df_all
 ##########
-
-
 
 st.header("Race Intelligence Dashboard")
 
@@ -143,6 +63,7 @@ else:
             insidetextanchor="middle",
             hovertemplate=f"<b>{seg}</b><br>Avg: {hms(splits[seg])}<br>{pct:.1f}% of race<extra></extra>",
         ))
+
     fig_split.update_layout(
         barmode="stack",
         height=100,
@@ -153,9 +74,12 @@ else:
         xaxis=dict(showticklabels=False, showgrid=False, zeroline=False),
         yaxis=dict(showticklabels=False, showgrid=False),
     )
+
     st.plotly_chart(fig_split, width="stretch")
+
     st.markdown("---")
-    col_hist, col_bench = st.columns([3, 2])
+    col_hist, col_bench = st.columns([1.5, 1])
+
     # ── Finish-Time Histogram ────────────────────────────────────────────
     with col_hist:
         st.subheader("Finish Time Distribution")
@@ -173,10 +97,10 @@ else:
         fig_hist.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(17,24,39,0.6)",
-            font_color="#9ca3af",
+            font_color = gr_fontcol,
             margin=dict(l=10, r=10, t=10, b=10),
-            xaxis=dict(gridcolor="#374151"),
-            yaxis=dict(title="Athletes", gridcolor="#374151"),
+            xaxis=dict(gridcolor = gr_gridcol),
+            yaxis=dict(title="Athletes", gridcolor = gr_gridcol)
         )
         st.plotly_chart(fig_hist, width="stretch")
     # ── Age Group Benchmarks ─────────────────────────────────────────────
@@ -216,15 +140,18 @@ else:
             height=400,
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(17,24,39,0.6)",
-            font_color="#9ca3af",
+            font_color = gr_fontcol,
             margin=dict(l=10, r=10, t=10, b=10),
-            xaxis=dict(title="Hours", gridcolor="#374151"),
-            yaxis=dict(gridcolor="#374151"),
+            xaxis=dict(title="Hours", gridcolor = gr_gridcol),
+            yaxis=dict(gridcolor = gr_gridcol),
             legend=dict(orientation="h", y=1.05),
         )
         st.plotly_chart(fig_ag, width="stretch")
+
     st.markdown("---")
+
     # ── Year-over-Year Trends ────────────────────────────────────────────
+
     st.subheader("Year-over-Year Performance Trends")
     yearly = (
         df.groupby("Year")
@@ -253,10 +180,10 @@ else:
         fig_trend.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(17,24,39,0.6)",
-            font_color="#9ca3af",
+            font_color = gr_fontcol,
             margin=dict(l=10, r=10, t=10, b=10),
-            xaxis=dict(title="Year", dtick=1, gridcolor="#374151"),
-            yaxis=dict(title="Hours (avg)", gridcolor="#374151"),
+            xaxis=dict(title="Year", dtick=1, gridcolor = gr_gridcol),
+            yaxis=dict(title="Hours (avg)", gridcolor = gr_gridcol),
             legend=dict(orientation="h", y=1.05),
         )
         st.plotly_chart(fig_trend, width="stretch")
@@ -267,8 +194,4 @@ else:
 
 
 
-
-
 bottom_head()
-
-
