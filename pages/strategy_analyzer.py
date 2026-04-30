@@ -1,11 +1,10 @@
 import streamlit as st
-from custom import top_menu, bottom_head, hm, load_data, gen_sel, DISCIPLINE_COLORS, ATHLETE_PALETTE
+from custom import top_menu, bottom_head, hm, load_data, gen_sel, DISCIPLINE_COLORS, ATHLETE_PALETTE, gr_fontcol, gr_gridcol
 
 import pandas as pd
 import numpy as np
 import plotly.express as px
 import plotly.graph_objects as go
-
 
 top_menu()
 
@@ -17,7 +16,7 @@ YEARS = list(range(2003, 2026))          # 2003 – 2025
 
 df_all = load_data(DATA_DIR, YEARS)
 
-# ─── Sidebar – Global Filters ─────────────────────────────────────────────────
+# ─── Global Filters ─────────────────────────────────────────────────
 
 colL, colR = st.columns([.5, .5])
 
@@ -45,7 +44,6 @@ def apply_filters(df: pd.DataFrame) -> pd.DataFrame:
 df = apply_filters(df_all)
 
 ##########
-
 
 st.header("Pacing Strategy Analyzer")
 st.caption(
@@ -128,34 +126,44 @@ else:
                     [hm(v) for v in grp["Run_sec"]],
                 )),
             ))
+
         # Quadrant lines
+
         fig_sc.add_vline(x=bike_med / 3600, line_dash="dash", line_color="#4b5563",
                          annotation_text="Bike Median", annotation_font_color="#6b7280")
+
         fig_sc.add_hline(y=run_med / 3600, line_dash="dash", line_color="#4b5563",
                          annotation_text="Run Median", annotation_font_color="#6b7280")
+
         fig_sc.update_layout(
             title="Bike vs Run Scatter – Pacing Quadrants",
             xaxis_title="Bike Time (hours)",
             yaxis_title="Run Time (hours)",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(17,24,39,0.6)",
-            font_color="#9ca3af",
-            xaxis=dict(gridcolor="#374151"),
-            yaxis=dict(gridcolor="#374151"),
+            font_color = gr_fontcol,
+            xaxis=dict(gridcolor = gr_gridcol),
+            yaxis=dict(gridcolor = gr_gridcol),
             legend=dict(orientation="h", y=1.08),
             height=500,
         )
+
         st.plotly_chart(fig_sc, width="stretch")
+
     # ── Swim-to-Bike-to-Run pacing funnel ─────────────────────────────
+    ## NOT WORKINGV ##
     st.subheader("Leg-Time Correlation: Does a fast swim lead to a faster finish?")
+
     corr_seg = st.selectbox(
         "Select discipline to correlate with finish time",
         ["Swim_sec", "Bike_sec", "Run_sec"],
         format_func=lambda x: x.replace("_sec", ""),
         key="corr_seg",
     )
+
     corr_df = pa_df.dropna(subset=[corr_seg, "Overall_sec"])
     corr_df = corr_df.sample(min(1000, len(corr_df)), random_state=1)
+
     fig_corr = px.scatter(
         corr_df,
         x=corr_df[corr_seg] / 3600,
@@ -169,14 +177,16 @@ else:
         },
         color_discrete_sequence=px.colors.qualitative.Set2,
     )
+
     fig_corr.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(17,24,39,0.6)",
-        font_color="#9ca3af",
+        font_color = gr_fontcol,
         height=380,
-        xaxis=dict(gridcolor="#374151"),
-        yaxis=dict(gridcolor="#374151"),
+        xaxis=dict(gridcolor = gr_gridcol),
+        yaxis=dict(gridcolor = gr_gridcol),
     )
+
     st.plotly_chart(fig_corr, width="stretch")
 
 

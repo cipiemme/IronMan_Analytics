@@ -107,12 +107,9 @@ def bottom_head():
         st.code("placeholder.two@example.com")
 
 
-
-
-
 ## working functions
 
-#load functions
+# load functions
 def load_merge():
 
     url = "https://naciscdn.org/naturalearth/110m/cultural/ne_110m_admin_0_countries.zip"
@@ -259,6 +256,7 @@ def load_data(DATA_DIR, YEARS) -> pd.DataFrame:
     raw.reset_index(drop=True, inplace=True)
     return raw
 
+# gender select load filter
 def gen_sel() -> str:
     sel_gender = st.radio( "Select gender", ["Male", "Female"])
     # Directory for the CSV files
@@ -266,7 +264,6 @@ def gen_sel() -> str:
         return "Data/WorldChamp/M"
     else:
         return "Data/WorldChamp/F"
-
 
 
 # time parsers

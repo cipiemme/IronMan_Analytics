@@ -68,7 +68,9 @@ else:
                 f"</div>",
                 unsafe_allow_html=True,
             )
+
     st.markdown("---")
+
     # ── Score normalisation for radar  ─────────────────────────────────
     # Score each discipline 0–100: 100 = fastest finisher, 0 = slowest
     def score_discipline(val, col_ref):
@@ -80,6 +82,7 @@ else:
         if worst == best:
             return 50.0
         return float(np.clip((worst - val) / (worst - best) * 100, 0, 100))
+
     radar_cats = ["Swim", "Bike", "Run", "T1 Eff.", "T2 Eff."]
     col_map    = ["Swim_sec", "Bike_sec", "Run_sec", "T1_sec", "T2_sec"]
     fig_radar = go.Figure()
@@ -95,7 +98,7 @@ else:
         # Prendiamo il colore base dell'atleta
     base_color = ATHLETE_PALETTE[i % len(ATHLETE_PALETTE)]
     
-    # Convertiamo l'esadecimale (es. #10b981) in formato rgba(R, G, B, 0.15)
+    # Convertiamo l'esadecimale in formato rgba(R, G, B, 0.15)
     h = base_color.lstrip('#')
     r, g, b = tuple(int(h[j:j+2], 16) for j in (0, 2, 4))
     fill_rgba = f"rgba({r}, {g}, {b}, 0.15)"
@@ -130,7 +133,9 @@ else:
         ("T2",   "T2_sec"),
         ("Run",  "Run_sec"),
     ]
+
     fig_bar = go.Figure()
+
     for seg, sec_col in bar_segs:
         fig_bar.add_trace(go.Bar(
             name=seg,
@@ -155,9 +160,9 @@ else:
         height = 350,
     )
 
-    col_r, col_b = st.columns(2)
+    col_a, col_b = st.columns(2)
 
-    with col_r:
+    with col_a:
         st.subheader("Performance Radar")
         st.plotly_chart(fig_radar, width="stretch")
 
