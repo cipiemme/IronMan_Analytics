@@ -6,6 +6,8 @@ import os
 
 # colors
 
+site_red = "#CC262D"
+
 ATHLETE_PALETTE = ["#10b981", "#3b82f6", "#f97316", "#a855f7"]
 
 DISCIPLINE_COLORS = {
@@ -17,17 +19,14 @@ DISCIPLINE_COLORS = {
 }
 
 gr_gridcol = "#374151"
-
+gr_axcol = "#374151"
 gr_fontcol = "#9ca3af"
 
 ## interface functions
 
 def top_menu():
 
-
     st.sidebar.title("ironMan Analytics")
-
-
 
     # define colors and dimensions of background
     st.markdown("""
@@ -61,7 +60,6 @@ def top_menu():
     """,
     unsafe_allow_html=True,
     )
-
 
     st.set_page_config(
         page_title="IronMan Analytics",
