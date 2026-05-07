@@ -3,6 +3,36 @@ from custom import top_menu, bottom_head, site_red
 
 top_menu()
 
+st.markdown("""
+            <style>
+
+            .label {
+            width: 100%;
+            height: 400px;
+            }
+
+            .label .study-history {
+            position: fixed;
+            top: calc(50% - 149px)
+            left: calc(50% - 647px)
+            width: 1430px;
+            height: 400px;
+            font-family: "Iceland-Regular", Helvetica;
+            font-weight: 400;
+            color: #000000;
+            font-size: 50px;
+            letter-spacing: 0;
+            line-height: normal;
+            }
+            </style>
+
+            <div class="label"><div class="study-history">Study history, predict the future.
+            In modern triathlon analytical rigour is what sets champions apart from the rest.
+            Explore the data from Kona(2003-2025) to demistify the sport and plan your performance. </div></div>
+
+            """,
+            unsafe_allow_html=True)
+
 col_jan, col_ryf, col_blu = st.columns([1, 1, 1])
 
 with col_jan:
