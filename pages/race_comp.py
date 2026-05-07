@@ -1,5 +1,5 @@
 import streamlit as st
-from custom import top_menu, bottom_head, hms, hm, load_data, gen_sel, DISCIPLINE_COLORS, ATHLETE_PALETTE, gr_gridcol, gr_fontcol
+from custom import top_menu, bottom_head, hms, hm, load_data, DISCIPLINE_COLORS, ATHLETE_PALETTE, gr_gridcol, gr_fontcol
 
 import numpy as np
 import plotly.express as px
@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 top_menu()
 
 # Folder that contains the CSV files. Change if needed.
-DATA_DIR = gen_sel(),
+DATA_DIR = {"Data/WorldChamp/M", "Data/WorldChamp/F"}
 
 YEARS = list(range(2003, 2026))          # 2003 – 2025
 

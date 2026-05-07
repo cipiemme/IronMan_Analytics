@@ -186,18 +186,19 @@ def load_merge():
 
 def load_data(DATA_DIR, YEARS) -> pd.DataFrame:
     frames = []
-    for year in YEARS:
-        for code in ("M", "F"):
-            path = os.path.join(DATA_DIR, f"IM{year}_{code}.csv")
-            if not os.path.exists(path):
-                continue
-            try:
-                df = pd.read_csv(path, low_memory=False)
-                df["Year"] = year
-                df["FileGender"] = code
-                frames.append(df)
-            except Exception as e:
-                st.warning(f"Could not read {path}: {e}")
+    for direct in DATA_DIR:
+        for year in YEARS:
+            for code in ("M", "F"):
+                path = os.path.join(direct, f"IM{year}_{code}.csv")
+                if not os.path.exists(path):
+                    continue
+                try:
+                    df = pd.read_csv(path, low_memory=False)
+                    df["Year"] = year
+                    df["FileGender"] = code
+                    frames.append(df)
+                except Exception as e:
+                    st.warning(f"Could not read {path}: {e}")
 
     if not frames:
         st.error(
@@ -217,6 +218,7 @@ def load_data(DATA_DIR, YEARS) -> pd.DataFrame:
         "Transition 1 Time":  "T1_sec",
         "Transition 2 Time":  "T2_sec",
     }
+
     for col, sec_col in time_map.items():
         if col in raw.columns:
             raw[sec_col] = raw[col].apply(parse_time)
