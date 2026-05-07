@@ -20,18 +20,54 @@ with col_blu:
 
 # Start analysis button
 
-emp_col, an_container, emp_col = st.columns([1, 1, 1])
+st.write("""
+        <style>
+        .button {
+          height: 161px;
+          position: relative;
+          width: 716px;
+          left: 25%;
+        }
 
-with emp_col:
-    st.write("")
+        .button .rectangle {
+          background-color: #cc262d;
+          border-radius: 20px;
+          box-shadow: 0px 4px 4px #ff060680;
+          height: 86.96%;
+          left: 2.65%;
+          position: absolute;
+          top: 6.83%;
+          width: 94.69%;
+        }
 
-with an_container:
-    css = """.st-key-an_container {background-color: rgba(204, 38, 45, .95);}"""
-    st.html(f"<style>{css}</style>")
+        .button .text-wrapper {
+          align-items: center;
+          color: #ffffff;
+          display: flex;
+          font-family: Iceland-Regular, Helvetica;
+          font-size: 50px;
+          font-weight: 400;
+          height: 100%;
+          justify-content: center;
+          left: 0;
+          letter-spacing: 0;
+          line-height: normal;
+          position: absolute;
+          text-align: center;
+          top: 0;
+          width: 100%;
+        }
+        </style>
 
-    an_page = st.Page("pages/strategy_analyzer.py")
-    an_butt = st.container(height="stretch", width="stretch", border=True, key="an_container")
-    an_butt.page_link(an_page, use_container_width=False, label="")
-    an_butt.write("<h3 style='text-align: center; color: white'> Start Your Analysis<h3>", unsafe_allow_html=True)
+        <html>
+        <body>
+        <div class="button" ><div class="rectangle" ></div>
+        <div class="text-wrapper" >Start Your Analysis</div></div>
+        </body>
+        </html>
+
+        """,
+        unsafe_allow_html=True)
+
 
 bottom_head()

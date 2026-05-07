@@ -78,12 +78,13 @@ def top_menu():
 
     # Render top navigation using native columns
     with st.container(height="stretch", width="stretch", border=False):
-        headerNavLinks = st.columns([ 1, 1, 1, 1, .5])
-        with headerNavLinks[0]: st.page_link(pages["Race compare"], label="Race Intelligence Dashboard", use_container_width=True)
-        with headerNavLinks[1]: st.page_link(pages["Athlete compare"], label="Athlete Comparator", use_container_width=True)
-        with headerNavLinks[2]: st.page_link(pages["Predictive model"], label="Predictive Time Model", use_container_width=True)
-        with headerNavLinks[3]: st.page_link(pages["Strategy builder"], label="Race Strategy Builder", use_container_width=True)
-        with headerNavLinks[4]: st.page_link(pages["Info"], label="Info", use_container_width=True)
+        headerNavLinks = st.columns([.25, 1, 1, 1, 1, .25])
+        with headerNavLinks[0]: st.page_link(pages["Home"], label="Home", use_container_width=True)
+        with headerNavLinks[1]: st.page_link(pages["Race compare"], label="Race Intelligence Dashboard", use_container_width=True)
+        with headerNavLinks[2]: st.page_link(pages["Athlete compare"], label="Athlete Comparator", use_container_width=True)
+        with headerNavLinks[3]: st.page_link(pages["Predictive model"], label="Predictive Time Model", use_container_width=True)
+        with headerNavLinks[4]: st.page_link(pages["Strategy builder"], label="Race Strategy Builder", use_container_width=True)
+        with headerNavLinks[5]: st.page_link(pages["Info"], label="Info", use_container_width=True)
 
 
 def bottom_head():
